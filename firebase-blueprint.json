@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User basic profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["patient", "doctor"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Consultation": {
+      "title": "Consultation",
+      "description": "A consultation requested by a patient.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "completed"] },
+        "chiefComplaint": { "type": "string" },
+        "healthContext": { "type": "string" },
+        "lifestyle": { "type": "string" },
+        "remedy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "status", "chiefComplaint", "createdAt", "updatedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin users configuration.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Public / basic user profiles"
+    },
+    "consultations/{consultationId}": {
+      "schema": { "$ref": "#/entities/Consultation" },
+      "description": "Consultation requests. Created by patients, read/updated by Admins."
+    },
+    "admins/{userId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Admin roles mapping."
+    }
+  }
+}
