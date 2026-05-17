@@ -33,7 +33,7 @@ export default function RootLayout() {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-serif text-2xl font-bold text-earth-800 tracking-tight">Vaydyan</span>
-                  <span className="font-serif text-lg italic text-sage-600 font-medium hidden sm:inline">by George</span>
+                  <span className="font-serif text-lg italic text-sage-600 font-medium whitespace-nowrap">by George</span>
                 </div>
               </Link>
 
