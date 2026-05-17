@@ -44,6 +44,11 @@ export default async function handler(req: any, res: any) {
     
     IMPORTANT: Please provide the entire response in two languages: first in English, followed by a clear divider (like ---), and then in Malayalam.
     
+    CRITICAL DISCLAIMER REQUIREMENT:
+    At the very end of both the English and the Malayalam sections, you MUST include the following disclaimer:
+    English: "*Disclaimer: I am not a doctor, but your AI Assistant using our traditional Ayurvedic culture and AI Capabilities for our good life. Please consult a doctor before starting the medication.*"
+    Malayalam: "*ഡിസ്ക്ലെയിമർ: ഞാൻ ഒരു ഡോക്ടർ അല്ല, മറിച്ച് നമ്മുടെ പരമ്പരാഗത ആയുർവേദ സംസ്കാരവും നിർമ്മിത ബുദ്ധിയും ഉപയോഗിച്ച് നല്ല ജീവിതത്തിനായി നിങ്ങളെ സഹായിക്കുന്ന നിങ്ങളുടെ AI അസിസ്റ്റൻ്റ് ആണ്. മരുന്നുകൾ ആരംഭിക്കുന്നതിന് മുമ്പ് ദയവായി ഒരു ഡോക്ടറെ സമീപിക്കുക.*"
+
     Patient Complaint: ${chiefComplaint}
     Health Context: ${healthContext}
     Lifestyle & Dosha Attributes: ${lifestyle}
