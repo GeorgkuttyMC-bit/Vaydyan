@@ -126,7 +126,7 @@ export default function HomePage() {
             <div className="md:w-2/5 bg-earth-200 min-h-[300px] flex items-center justify-center relative">
                {/* Image placeholder */}
                <div className="absolute inset-0 bg-earth-300 overflow-hidden flex items-center justify-center">
-                 <img src="https://raw.githubusercontent.com/GeorgkuttyMC-bit/Vaydyan/main/public/george.jpg" alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover" />
+                 <img src="https://raw.githubusercontent.com/GeorgkuttyMC-bit/Vaydyan/537b32b6ba0c622c4319c05a983a39c4c629e164/public/george.jpg" alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover object-top" />
                </div>
             </div>
             <div className="md:w-3/5 p-10 md:p-14 flex flex-col justify-center">
