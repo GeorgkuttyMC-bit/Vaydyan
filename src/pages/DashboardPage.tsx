@@ -50,8 +50,13 @@ export default function DashboardPage() {
     } else {
       window.speechSynthesis.cancel();
       
-      const cleanText = text.replace(/[*#]/g, ''); // Remove some markdown characters for better reading
+      // The backend returns English followed by Malayalam, separated by "---"
+      const parts = text.split('---');
+      const textToSpeak = parts.length > 1 ? parts.slice(1).join('---').trim() : text;
+
+      const cleanText = textToSpeak.replace(/[*#]/g, ''); // Remove some markdown characters for better reading
       const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'ml-IN'; // Ensure Malayalam language is set
       
       utterance.onend = () => setSpeakingId(null);
       utterance.onerror = () => setSpeakingId(null);
