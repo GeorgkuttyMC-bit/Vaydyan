@@ -1,9 +1,26 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, HeartPulse, UserCheck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Leaf, HeartPulse, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+
+const ayurvedicImages = [
+  "https://images.unsplash.com/photo-1512290923902-8a9f81fc7381?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1545220677-7407b1d9bf5b?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1608681283627-77fb28148eec?auto=format&fit=crop&q=80&w=1200"
+];
 
 export default function HomePage() {
   const { language } = useLanguage();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % ayurvedicImages.length);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   const isDe = language === 'de';
 
   const texts = {
@@ -25,15 +42,24 @@ export default function HomePage() {
     aboutTitle: isDe ? 'Treffe George' : 'Meet George',
     aboutSubtitle: isDe ? 'Anwendungsentwickler & Visionär' : 'Application Developer & Visionary',
     aboutP1: isDe ? 'George ist der Entwickler und Visionär hinter der Vaydyan-Plattform. Durch die nahtlose Verbindung der alten Diagnoseprinzipien des Ayurveda mit den innovativen Möglichkeiten der KI hat er einen zugänglichen digitalen Arzt entwickelt, der die Lücke zwischen östlicher Weisheit und moderner Technologie schließt.' : 'George is the developer and visionary behind the Vaydyan platform. By seamlessly bringing together the ancient diagnostic principles of Ayurveda and the cutting-edge capabilities of AI, he engineered an accessible digital doctor that bridges the gap between Eastern wisdom and modern technology.',
-    aboutQuote: isDe ? '"Indem wir die ganzheitliche Weisheit des Ayurveda durch intelligente Software demokratisieren, befähigen wir den Einzelnen, sein Wohlbefinden auf natürliche Weise selbst in die Hand zu nehmen."' : '"By democratizing the holistic wisdom of Ayurveda through intelligent software, we empower individuals to take control of their wellness naturally."'
+    aboutQuote: isDe ? '"Indem wir die ganzheitliche Weisheit des Ayurveda durch intelligente Software demokratisieren, befähigen wir den Einzelnen, sein Wohlbefinden auf natürliche Weise selbst in die Hand zu nehmen."' : '"By democratizing the holistic wisdom of Ayurveda through intelligent software, we empower individuals to take control of their wellness naturally."',
+    historyTitle: isDe ? 'Geschichte der indischen Ayurveda-Kultur' : 'History of Indian Ayurvedic Culture',
+    historyDesc1: isDe ? 'Ayurveda, oft als "Mutter aller Heilkunst" bezeichnet, ist ein über 5.000 Jahre altes System der natürlichen Heilung, das seinen Ursprung in der vedischen Kultur Indiens hat.' : 'Ayurveda, often called the "Mother of All Healing," is an over 5,000-year-old system of natural healing that has its origins in the Vedic culture of India.',
+    historyDesc2: isDe ? 'Es betont das Gleichgewicht von Geist, Körper und Seele, um die allgemeine Gesundheit zu erhalten und Krankheiten vorzubeugen, indem es eine Fülle von Kräutern, Reinigungstechniken, Meditation und Ernährungsrichtlinien verwendet, die im Laufe der Jahrtausende entwickelt und verfeinert wurden.' : 'It emphasizes the balance of mind, body, and spirit to maintain overall health and prevent illness, utilizing a wealth of herbs, purification techniques, meditation, and dietary guidelines developed and refined over millennia.'
   };
 
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-earth-100 py-24 sm:py-32">
-        <div className="absolute inset-0 opacity-10 pattern-dots text-earth-800" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative overflow-hidden bg-earth-50 py-24 sm:py-32">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 z-0 opacity-10 bg-cover bg-center bg-no-repeat grayscale"
+          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1611078519131-ab10d408eb41?auto=format&fit=crop&q=80&w=2000")' }}
+        ></div>
+        <div className="absolute inset-0 z-0 opacity-20 bg-gradient-to-b from-transparent to-earth-50"></div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-100 text-sage-800 text-sm font-medium mb-8">
             <Leaf className="w-4 h-4" />
             {texts.heroBadge}
@@ -113,6 +139,36 @@ export default function HomePage() {
               <p className="text-earth-600 leading-relaxed font-serif italic border-l-4 border-sage-200 pl-4">
                 {texts.aboutQuote}
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* History of Indian Ayurvedic Culture */}
+      <section className="py-24 bg-earth-900 text-earth-50 relative overflow-hidden">
+        {/* Background Image Carousel */}
+        {ayurvedicImages.map((src, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              index === currentImageIndex ? 'opacity-30' : 'opacity-0'
+            }`}
+          >
+            <img 
+              src={src} 
+              alt="Ayurvedic culture" 
+              className="w-full h-full object-cover grayscale"
+            />
+            {/* Gradient overlay to ensure text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-earth-900 via-earth-900/80 to-transparent"></div>
+          </div>
+        ))}
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl sm:text-4xl font-serif text-sage-200 mb-6">{texts.historyTitle}</h2>
+            <div className="space-y-6 text-earth-200 text-lg leading-relaxed">
+              <p>{texts.historyDesc1}</p>
+              <p>{texts.historyDesc2}</p>
             </div>
           </div>
         </div>

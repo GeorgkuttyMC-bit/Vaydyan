@@ -26,15 +26,29 @@ export default function RootLayout() {
       <header className="border-b border-earth-200 bg-earth-50 relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-              <div className="bg-sage-600 p-1.5 rounded-lg shadow-sm">
-                 <Leaf className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-serif text-2xl font-bold text-earth-800 tracking-tight">Vaydyan</span>
-                <span className="font-serif text-lg italic text-sage-600 font-medium">by George</span>
-              </div>
-            </Link>
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center gap-2 mr-4" onClick={() => setMobileMenuOpen(false)}>
+                <div className="bg-sage-600 p-1.5 rounded-lg shadow-sm">
+                   <Leaf className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-serif text-2xl font-bold text-earth-800 tracking-tight">Vaydyan</span>
+                  <span className="font-serif text-lg italic text-sage-600 font-medium hidden sm:inline">by George</span>
+                </div>
+              </Link>
+
+              {/* Language Switch Button for Mobile */}
+              <button 
+                onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
+                className="md:hidden flex items-center justify-center p-1.5 text-earth-600 hover:text-sage-600 transition-colors rounded-md bg-earth-50 border border-earth-200"
+                aria-label="Toggle language"
+              >
+                <div className="flex items-center gap-1 text-xs font-bold text-earth-700">
+                  <Globe className="w-4 h-4 text-sage-600" />
+                  {language === 'en' ? 'DE' : 'EN'}
+                </div>
+              </button>
+            </div>
             
             {/* Desktop Nav */}
             <nav className="hidden md:flex gap-6 items-center">
@@ -86,13 +100,6 @@ export default function RootLayout() {
         {/* Mobile Nav */}
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-earth-200 shadow-sm py-4 px-4 flex flex-col gap-4">
-            <button 
-              onClick={() => { setLanguage(language === 'en' ? 'de' : 'en'); setMobileMenuOpen(false); }}
-              className="flex items-center gap-1.5 text-earth-800 font-medium py-2"
-            >
-              <Globe className="w-4 h-4" />
-              {language === 'en' ? 'Switch to German' : 'Switch to English'}
-            </button>
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">{texts.home}</Link>
             <Link to="/#about" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">{texts.about}</Link>
             {userData ? (
