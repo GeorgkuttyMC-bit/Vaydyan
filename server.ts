@@ -13,7 +13,7 @@ async function startServer() {
     generateRemedyHandler(req, res);
   });
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT || 3000);
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

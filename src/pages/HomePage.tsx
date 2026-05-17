@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, HeartPulse, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Leaf, HeartPulse, ShieldCheck, User } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const ayurvedicImages = [
@@ -126,8 +126,7 @@ export default function HomePage() {
             <div className="md:w-2/5 bg-earth-200 min-h-[300px] flex items-center justify-center relative">
                {/* Image placeholder */}
                <div className="absolute inset-0 bg-earth-300 overflow-hidden flex items-center justify-center">
-                 <UserCheck className="w-32 h-32 text-earth-400 opacity-50" />
-                 <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=800" alt="Mortar and pestle with herbs" className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" />
+                 <img src={new URL('../lib/george.jpg', import.meta.url).href} alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover" />
                </div>
             </div>
             <div className="md:w-3/5 p-10 md:p-14 flex flex-col justify-center">
