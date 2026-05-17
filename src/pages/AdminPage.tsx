@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Leaf, UserCircle, FileSignature, Volume2, Square } from 'lucide-react';
@@ -19,12 +20,46 @@ interface Consultation {
 
 export default function AdminPage() {
   const { userData } = useAuth();
+  const { language } = useLanguage();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const isDe = language === 'de';
+
+  const texts = {
+    unsupportedSpeech: isDe ? "Tut mir leid, Ihr Browser unterstützt Text-to-Speech nicht!" : "Sorry, your browser doesn't support text to speech!",
+    accessDenied: isDe ? 'Zugriff verweigert. Administratorrechte erforderlich.' : 'Access Denied. Admin privileges required.',
+    unknownPatient: isDe ? 'Unbekannter Patient' : 'Unknown Patient',
+    totalPatients: isDe ? 'Patienten Gesamt' : 'Total Patients',
+    consultationsStr: isDe ? 'Konsultationen' : 'Consultations',
+    systemLogsTitle: isDe ? 'Systemprotokolle / Vaydyan Warteschlange' : 'System Logs / Vaydyan Queue',
+    searchPlaceholder: isDe ? 'Patienten oder Beschwerden suchen...' : 'Search patients or complaints...',
+    loadingQueue: isDe ? 'Warteschlange wird geladen...' : 'Loading queue...',
+    noConsults: isDe ? 'Keine Konsultationen gefunden.' : 'No consultations found.',
+    selectRecord: isDe ? 'Wählen Sie einen Beratungsdatensatz aus, um vom System generierte Heilmittel zu überprüfen.' : 'Select a consultation record to review system generated remedies.',
+    submitted: isDe ? 'Eingereicht' : 'Submitted',
+    deleteConfirm: isDe ? 'Sind Sie sicher, dass Sie diesen Beratungsdatensatz löschen möchten? Dies kann nicht rückgängig gemacht werden.' : 'Are you sure you want to delete this consultation record? This cannot be undone.',
+    deleteRecord: isDe ? 'Eintrag löschen' : 'Delete Record',
+    chiefComplaint: isDe ? 'Hauptbeschwerde' : 'Chief Complaint',
+    healthContext: isDe ? 'Gesundheitlicher Kontext' : 'Health Context',
+    age: isDe ? 'Alter' : 'Age',
+    gender: isDe ? 'Geschlecht' : 'Gender',
+    allergies: isDe ? 'Allergien' : 'Allergies',
+    meds: isDe ? 'Medikamente' : 'Meds',
+    none: isDe ? 'Keine' : 'None',
+    lifestyle: isDe ? 'Lebensstil (Dosha)' : 'Lifestyle (Dosha)',
+    sleep: isDe ? 'Schlaf' : 'Sleep',
+    digestion: isDe ? 'Verdauung' : 'Digestion',
+    stress: isDe ? 'Stress' : 'Stress',
+    genLog: isDe ? 'Vaydyan System-Generierungsprotokoll' : 'Vaydyan System Generation Log',
+    stop: isDe ? 'Stopp' : 'Stop',
+    readAloud: isDe ? 'Vorlesen' : 'Read Aloud',
+    noRemedy: isDe ? 'Kein Heilmittel generiert.' : 'No remedy generated.'
+  };
 
   useEffect(() => {
     // Stop speaking when unmounting
@@ -38,7 +73,7 @@ export default function AdminPage() {
 
   const handleSpeak = (id: string, text: string) => {
     if (!('speechSynthesis' in window)) {
-      alert("Sorry, your browser doesn't support text to speech!");
+      alert(texts.unsupportedSpeech);
       return;
     }
 
@@ -120,7 +155,7 @@ export default function AdminPage() {
           const data = consultDoc.data();
           return {
             id: consultDoc.id,
-            patientName: data.patientName || 'Unknown Patient',
+            patientName: data.patientName || texts.unknownPatient,
             ...data
           } as Consultation;
         });
@@ -134,10 +169,10 @@ export default function AdminPage() {
       }
     };
     fetchConsultations();
-  }, [userData]);
+  }, [userData, language]); // added language to trigger unknownPatient update if needed
 
   if (userData?.role !== 'doctor') {
-    return <div className="p-8 text-center text-red-500 bg-earth-50 min-h-screen font-medium">Access Denied. Admin privileges required.</div>;
+    return <div className="p-8 text-center text-red-500 bg-earth-50 min-h-screen font-medium">{texts.accessDenied}</div>;
   }
 
   const getFormatData = (jsonStr: string) => {
@@ -159,7 +194,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
           <div className="bg-white p-6 rounded-xl border border-earth-200 shadow-sm flex items-center justify-between">
              <div>
-               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">Total Patients</h3>
+               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">{texts.totalPatients}</h3>
                <p className="text-3xl font-serif font-bold text-sage-700">{uniqueUsersCount}</p>
              </div>
              <div className="w-12 h-12 bg-sage-50 rounded-full flex items-center justify-center">
@@ -168,7 +203,7 @@ export default function AdminPage() {
           </div>
           <div className="bg-white p-6 rounded-xl border border-earth-200 shadow-sm flex items-center justify-between">
              <div>
-               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">Consultations</h3>
+               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">{texts.consultationsStr}</h3>
                <p className="text-3xl font-serif font-bold text-sage-700">{totalConsultations}</p>
              </div>
              <div className="w-12 h-12 bg-sage-50 rounded-full flex items-center justify-center">
@@ -181,10 +216,10 @@ export default function AdminPage() {
           {/* Left Column - List */}
           <div className="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-earth-200 overflow-hidden flex flex-col h-full">
           <div className="p-4 border-b border-earth-100 bg-earth-100/50 flex flex-col gap-3 shrink-0">
-            <h2 className="font-serif font-bold text-lg text-earth-800">System Logs / Vaydyan Queue</h2>
+            <h2 className="font-serif font-bold text-lg text-earth-800">{texts.systemLogsTitle}</h2>
             <input 
               type="text" 
-              placeholder="Search patients or complaints..." 
+              placeholder={texts.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-earth-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-sage-500"
@@ -193,9 +228,9 @@ export default function AdminPage() {
           
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {loading ? (
-              <p className="p-4 text-center text-earth-500 text-sm">Loading queue...</p>
+              <p className="p-4 text-center text-earth-500 text-sm">{texts.loadingQueue}</p>
             ) : consultations.length === 0 ? (
-              <p className="p-4 text-center text-earth-500 text-sm">No consultations found.</p>
+              <p className="p-4 text-center text-earth-500 text-sm">{texts.noConsults}</p>
             ) : (
               consultations
               .filter(c => 
@@ -235,7 +270,7 @@ export default function AdminPage() {
           {!selectedConsult ? (
             <div className="flex-1 flex flex-col items-center justify-center text-earth-400 p-8">
               <FileSignature className="w-16 h-16 text-earth-200 mb-4" />
-              <p>Select a consultation record to review system generated remedies.</p>
+              <p>{texts.selectRecord}</p>
             </div>
           ) : (
             <div className="flex flex-col h-full overflow-hidden">
@@ -247,12 +282,12 @@ export default function AdminPage() {
                       <UserCircle className="w-10 h-10 text-sage-600" />
                       <div>
                         <h2 className="text-xl font-serif text-earth-800">{selectedConsult.patientName}</h2>
-                        <p className="text-sm text-earth-500">Submitted: {format(new Date(selectedConsult.createdAt), 'PPP p')}</p>
+                        <p className="text-sm text-earth-500">{texts.submitted}: {format(new Date(selectedConsult.createdAt), 'PPP p')}</p>
                       </div>
                     </div>
                     <button
                       onClick={async () => {
-                        if (confirm('Are you sure you want to delete this consultation record? This cannot be undone.')) {
+                        if (confirm(texts.deleteConfirm)) {
                           try {
                             const { deleteDoc, doc } = await import('firebase/firestore');
                             await deleteDoc(doc(db, 'consultations', selectedConsult.id));
@@ -265,7 +300,7 @@ export default function AdminPage() {
                       }}
                       className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-md font-medium text-sm transition-colors"
                     >
-                      Delete Record
+                      {texts.deleteRecord}
                     </button>
                   </div>
               </div>
@@ -274,7 +309,7 @@ export default function AdminPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-earth-50/30">
                 {/* Complaint */}
                 <section>
-                  <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">Chief Complaint</h3>
+                  <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">{texts.chiefComplaint}</h3>
                   <div className="bg-white border text-sm border-earth-200 p-4 rounded-md text-earth-800">
                     {selectedConsult.chiefComplaint}
                   </div>
@@ -283,21 +318,21 @@ export default function AdminPage() {
                 {/* Context */}
                 <section className="grid grid-cols-2 gap-4">
                   <div className="bg-white border border-earth-200 p-4 rounded-md">
-                    <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">Health Context</h3>
+                    <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">{texts.healthContext}</h3>
                     <ul className="text-sm text-earth-700 space-y-1">
-                      <li><span className="font-medium">Age:</span> {getFormatData(selectedConsult.healthContext).age || 'N/A'}</li>
-                      <li><span className="font-medium">Gender:</span> {getFormatData(selectedConsult.healthContext).gender || 'N/A'}</li>
-                      <li><span className="font-medium">Allergies:</span> {getFormatData(selectedConsult.healthContext).allergies || 'None'}</li>
-                      <li><span className="font-medium">Meds:</span> {getFormatData(selectedConsult.healthContext).medications || 'None'}</li>
+                      <li><span className="font-medium">{texts.age}:</span> {getFormatData(selectedConsult.healthContext).age || 'N/A'}</li>
+                      <li><span className="font-medium">{texts.gender}:</span> {getFormatData(selectedConsult.healthContext).gender || 'N/A'}</li>
+                      <li><span className="font-medium">{texts.allergies}:</span> {getFormatData(selectedConsult.healthContext).allergies || texts.none}</li>
+                      <li><span className="font-medium">{texts.meds}:</span> {getFormatData(selectedConsult.healthContext).medications || texts.none}</li>
                     </ul>
                   </div>
                   
                   <div className="bg-white border border-earth-200 p-4 rounded-md">
-                    <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">Lifestyle (Dosha)</h3>
+                    <h3 className="text-xs font-bold text-earth-500 uppercase tracking-wider mb-2">{texts.lifestyle}</h3>
                     <ul className="text-sm text-earth-700 space-y-1">
-                      <li><span className="font-medium">Sleep:</span> {getFormatData(selectedConsult.lifestyle).sleepPatterns || 'N/A'}</li>
-                      <li><span className="font-medium">Digestion:</span> {getFormatData(selectedConsult.lifestyle).digestion || 'N/A'}</li>
-                      <li><span className="font-medium">Stress:</span> {getFormatData(selectedConsult.lifestyle).stressLevels || 'N/A'}</li>
+                      <li><span className="font-medium">{texts.sleep}:</span> {getFormatData(selectedConsult.lifestyle).sleepPatterns || 'N/A'}</li>
+                      <li><span className="font-medium">{texts.digestion}:</span> {getFormatData(selectedConsult.lifestyle).digestion || 'N/A'}</li>
+                      <li><span className="font-medium">{texts.stress}:</span> {getFormatData(selectedConsult.lifestyle).stressLevels || 'N/A'}</li>
                     </ul>
                   </div>
                 </section>
@@ -306,7 +341,7 @@ export default function AdminPage() {
                 <section className="flex flex-col">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-bold text-sage-600 uppercase tracking-wider flex items-center gap-2">
-                      <Leaf className="w-4 h-4" /> Vaydyan System Generation Log
+                      <Leaf className="w-4 h-4" /> {texts.genLog}
                     </h3>
                     {selectedConsult.remedy && (
                       <button
@@ -318,15 +353,15 @@ export default function AdminPage() {
                         }`}
                       >
                         {speakingId === selectedConsult.id ? (
-                          <><Square className="w-3 h-3 fill-current" /> Stop</>
+                          <><Square className="w-3 h-3 fill-current" /> {texts.stop}</>
                         ) : (
-                          <><Volume2 className="w-3 h-3" /> Read Aloud</>
+                          <><Volume2 className="w-3 h-3" /> {texts.readAloud}</>
                         )}
                       </button>
                     )}
                   </div>
                   <div className="whitespace-pre-wrap text-earth-800 bg-sage-50/30 p-6 rounded-md border border-sage-100 font-sans text-sm leading-relaxed">
-                    {(selectedConsult.remedy || 'No remedy generated.').replace(/\*\*/g, '')}
+                    {(selectedConsult.remedy || texts.noRemedy).replace(/\*\*/g, '')}
                   </div>
                 </section>
               </div>

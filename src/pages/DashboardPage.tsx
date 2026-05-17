@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Leaf, Clock, CheckCircle, Volume2, Square } from 'lucide-react';
@@ -17,12 +18,34 @@ interface Consultation {
 
 export default function DashboardPage() {
   const { userData } = useAuth();
+  const { language } = useLanguage();
   const location = useLocation();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState(location.state?.consultationSubmitted || false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const isDe = language === 'de';
+
+  const texts = {
+    loadingAuth: isDe ? 'Laden oder nicht autorisiert...' : 'Loading or unauthorized...',
+    unsupportedSpeech: isDe ? "Tut mir leid, Ihr Browser unterstützt Text-to-Speech nicht!" : "Sorry, your browser doesn't support text to speech!",
+    welcome: isDe ? 'Willkommen' : 'Welcome',
+    subtitle: isDe ? 'Verfolgen Sie Ihre Heilungsreise und greifen Sie auf Ihre ayurvedischen Heilmittel zu.' : 'Track your healing journey and access your Ayurvedic remedies.',
+    successMsg: isDe ? 'Ihre Beratung wurde erfolgreich von Vaydyan verarbeitet. Sehen Sie sich unten Ihr von der KI erstelltes Protokoll an.' : 'Your consultation was processed successfully by Vaydyan. Review your AI-generated protocol below.',
+    loadingConsults: isDe ? 'Ihre Beratungen werden geladen...' : 'Loading your consultations...',
+    noConsultsTitle: isDe ? 'Noch keine Beratungen' : 'No Consultations Yet',
+    noConsultsDesc: isDe ? 'Beginnen Sie Ihre Reise zu optimaler Gesundheit, indem Sie Ihre erste Beratungsanfrage an Vaydyan AI senden.' : 'Start your journey toward optimal health by submitting your first consultation request to Vaydyan AI.',
+    startBtn: isDe ? 'KI-Beratung starten' : 'Start AI Consultation',
+    myRemedies: isDe ? 'Meine Heilmittel & Beratungen' : 'My Remedies & Consultations',
+    statusStr: isDe ? 'Status' : 'Status',
+    chiefComplaint: isDe ? 'Hauptbeschwerde' : 'Chief Complaint',
+    protocol: isDe ? 'Vaydyan KI Protokoll' : 'Vaydyan AI Protocol',
+    stopReading: isDe ? 'Aufhören zu lesen' : 'Stop Reading',
+    readAloud: isDe ? 'Vorlesen' : 'Read Aloud',
+    analyzingMsg: isDe ? 'Unser Vaydyan KI-System analysiert Ihr Dosha sorgfältig und erstellt Ihr personalisiertes Protokoll. Bitte aktualisieren Sie die Seite in einem Moment.' : 'Our Vaydyan AI system is carefully analyzing your dosha and crafting your personalized protocol. Please refresh in a moment.'
+  };
 
   useEffect(() => {
     if (successMessage) {
@@ -42,7 +65,7 @@ export default function DashboardPage() {
 
   const handleSpeak = (id: string, text: string) => {
     if (!('speechSynthesis' in window)) {
-      alert("Sorry, your browser doesn't support text to speech!");
+      alert(texts.unsupportedSpeech);
       return;
     }
 
@@ -139,7 +162,7 @@ export default function DashboardPage() {
   }, [userData]);
 
   if (!userData?.displayName) {
-    return <div className="p-8 text-center bg-earth-50 min-h-screen">Loading or unauthorized...</div>;
+    return <div className="p-8 text-center bg-earth-50 min-h-screen">{texts.loadingAuth}</div>;
   }
 
   return (
@@ -147,32 +170,32 @@ export default function DashboardPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-serif text-earth-800 mb-2">Welcome, {userData.displayName}</h1>
-            <p className="text-earth-600">Track your healing journey and access your Ayurvedic remedies.</p>
+            <h1 className="text-3xl font-serif text-earth-800 mb-2">{texts.welcome}, {userData.displayName}</h1>
+            <p className="text-earth-600">{texts.subtitle}</p>
           </div>
         </div>
 
         {successMessage && (
           <div className="mb-8 p-4 bg-sage-100 border border-sage-200 text-sage-800 rounded-md flex items-center gap-3">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
-            <p>Your consultation was processed successfully by Vaydyan. Review your AI-generated protocol below.</p>
+            <p>{texts.successMsg}</p>
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-earth-500">Loading your consultations...</div>
+          <div className="text-center py-12 text-earth-500">{texts.loadingConsults}</div>
         ) : consultations.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-earth-100 p-12 text-center">
             <Leaf className="w-16 h-16 text-earth-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-earth-800 mb-2">No Consultations Yet</h3>
-            <p className="text-earth-500 mb-6 max-w-md mx-auto">Start your journey toward optimal health by submitting your first consultation request to Vaydyan AI.</p>
+            <h3 className="text-xl font-medium text-earth-800 mb-2">{texts.noConsultsTitle}</h3>
+            <p className="text-earth-500 mb-6 max-w-md mx-auto">{texts.noConsultsDesc}</p>
             <a href="/consult" className="inline-block bg-sage-600 hover:bg-sage-700 text-white px-6 py-3 rounded-md font-medium transition-colors">
-              Start AI Consultation
+              {texts.startBtn}
             </a>
           </div>
         ) : (
           <div className="space-y-8">
-            <h2 className="text-xl font-serif text-earth-800 mb-4 border-b border-earth-200 pb-2">My Remedies & Consultations</h2>
+            <h2 className="text-xl font-serif text-earth-800 mb-4 border-b border-earth-200 pb-2">{texts.myRemedies}</h2>
             <div className="grid grid-cols-1 gap-6">
               {consultations.map(consult => (
                 <div key={consult.id} className="bg-white rounded-xl shadow-sm border border-earth-200 overflow-hidden">
@@ -187,13 +210,13 @@ export default function DashboardPage() {
                         <span className="text-sm text-earth-500 font-medium tracking-wide py-0.5">
                           {format(new Date(consult.createdAt), 'MMM dd, yyyy')}
                         </span>
-                        <div className="font-medium text-earth-800 capitalize mt-0.5">Status: {consult.status}</div>
+                        <div className="font-medium text-earth-800 capitalize mt-0.5">{texts.statusStr}: {consult.status}</div>
                       </div>
                     </div>
                   </div>
                   
                   <div className="p-6">
-                    <h3 className="text-sm font-semibold text-earth-500 uppercase tracking-wider mb-2">Chief Complaint</h3>
+                    <h3 className="text-sm font-semibold text-earth-500 uppercase tracking-wider mb-2">{texts.chiefComplaint}</h3>
                     <p className="text-earth-800 leading-relaxed max-w-3xl mb-6 bg-earth-50 p-4 rounded-md border border-earth-100">
                       {consult.chiefComplaint}
                     </p>
@@ -202,7 +225,7 @@ export default function DashboardPage() {
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-sm font-semibold text-sage-700 uppercase tracking-wider flex items-center gap-2">
-                            <Leaf className="w-4 h-4" /> Vaydyan AI Protocol
+                            <Leaf className="w-4 h-4" /> {texts.protocol}
                           </h3>
                           <button
                             onClick={() => handleSpeak(consult.id, consult.remedy || '')}
@@ -213,9 +236,9 @@ export default function DashboardPage() {
                             }`}
                           >
                             {speakingId === consult.id ? (
-                              <><Square className="w-4 h-4 fill-current" /> Stop Reading</>
+                              <><Square className="w-4 h-4 fill-current" /> {texts.stopReading}</>
                             ) : (
-                              <><Volume2 className="w-4 h-4" /> Read Aloud</>
+                              <><Volume2 className="w-4 h-4" /> {texts.readAloud}</>
                             )}
                           </button>
                         </div>
@@ -226,7 +249,7 @@ export default function DashboardPage() {
                     ) : (
                       <div className="text-earth-500 italic text-sm mt-4 flex items-center gap-2">
                         <Clock className="w-4 h-4" /> 
-                        Our Vaydyan AI system is carefully analyzing your dosha and crafting your personalized protocol. Please refresh in a moment.
+                        {texts.analyzingMsg}
                       </div>
                     )}
                   </div>
