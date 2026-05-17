@@ -23,11 +23,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     // Stop speaking when unmounting
     return () => {
       if ('speechSynthesis' in window) {
+        if (abortControllerRef.current) abortControllerRef.current.abort();
         window.speechSynthesis.cancel();
       }
     };
@@ -40,24 +42,66 @@ export default function AdminPage() {
     }
 
     if (speakingId === id) {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
       window.speechSynthesis.cancel();
       setSpeakingId(null);
     } else {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
       window.speechSynthesis.cancel();
       
-      // The backend returns English followed by Malayalam, separated by "---"
-      const parts = text.split('---');
-      const textToSpeak = parts.length > 1 ? parts.slice(1).join('---').trim() : text;
-
-      const cleanText = textToSpeak.replace(/[*#]/g, ''); // Remove some markdown characters for better reading
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'ml-IN'; // Ensure Malayalam language is set
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
       
-      utterance.onend = () => setSpeakingId(null);
-      utterance.onerror = () => setSpeakingId(null);
+      let textToSpeak = text;
+      // Extract Malayalam part if exists using regex
+      const malayalamIndex = text.search(/[\u0D00-\u0D7F]/);
+      if (malayalamIndex !== -1) {
+         const previousNewline = text.lastIndexOf('\n', malayalamIndex);
+         textToSpeak = text.substring(previousNewline === -1 ? 0 : previousNewline).trim();
+      } else if (text.includes('---')) {
+         textToSpeak = text.split('---').pop()?.trim() || text;
+      }
 
-      window.speechSynthesis.speak(utterance);
+      const cleanText = textToSpeak.replace(/[*#]/g, '').trim();
+      
+      // Fallback chunking: Split by punctuation to prevent long text from cutting off on mobile Chrome/Safari
+      const chunks = cleanText.match(/[^.!?\n]+[.!?\n]*/g) || [cleanText];
+      
       setSpeakingId(id);
+
+      let currentChunk = 0;
+      const playNext = () => {
+         if (abortController.signal.aborted) return;
+         
+         if (currentChunk < chunks.length && chunks[currentChunk].trim().length > 0) {
+            const utterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
+            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : 'en-US'; 
+            
+            utterance.onend = () => {
+               if (abortController.signal.aborted) return;
+               currentChunk++;
+               playNext();
+            };
+            
+            utterance.onerror = (e) => {
+               if (e.error !== 'interrupted' && e.error !== 'canceled') {
+                  console.error("Speech error", e);
+               }
+               if (currentChunk === chunks.length - 1 || abortController.signal.aborted) {
+                  setSpeakingId(null);
+               } else {
+                  currentChunk++;
+                  playNext();
+               }
+            };
+            
+            window.speechSynthesis.speak(utterance);
+         } else {
+            setSpeakingId(null);
+         }
+      };
+
+      setTimeout(() => playNext(), 50);
     }
   };
 
