@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Leaf, UserCircle, Send, FileSignature } from 'lucide-react';
+import { Leaf, UserCircle, FileSignature } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Consultation {
   id: string;
-  userId: string;
   status: 'pending' | 'reviewed' | 'completed';
   chiefComplaint: string;
   healthContext: string;
@@ -15,41 +14,33 @@ interface Consultation {
   remedy?: string;
   createdAt: string;
   updatedAt: string;
-  patientName?: string;
+  patientName: string;
 }
 
 export default function AdminPage() {
-  const { user, userData } = useAuth();
+  const { userData } = useAuth();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null);
 
   useEffect(() => {
     const fetchConsultations = async () => {
-      if (!user || userData?.role !== 'doctor') return;
+      if (userData?.role !== 'doctor') {
+        setLoading(false);
+        return;
+      }
       try {
         const q = query(collection(db, 'consultations'));
         const snapshot = await getDocs(q);
         
-        const results = await Promise.all(snapshot.docs.map(async (consultDoc) => {
+        const results = snapshot.docs.map((consultDoc) => {
           const data = consultDoc.data();
-          let patientName = 'Unknown Patient';
-          try {
-             // Fetch patient data securely. Note: Admin needs access to read users.
-             const userDoc = await getDoc(doc(db, 'users', data.userId));
-             if (userDoc.exists()) {
-               patientName = userDoc.data().displayName || userDoc.data().email || 'Unknown';
-             }
-          } catch (e) {
-             console.error("Could not fetch user info");
-          }
-
           return {
             id: consultDoc.id,
-            patientName,
+            patientName: data.patientName || 'Unknown Patient',
             ...data
           } as Consultation;
-        }));
+        });
         
         results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setConsultations(results);
@@ -60,9 +51,9 @@ export default function AdminPage() {
       }
     };
     fetchConsultations();
-  }, [user, userData]);
+  }, [userData]);
 
-  if (!user || userData?.role !== 'doctor') {
+  if (userData?.role !== 'doctor') {
     return <div className="p-8 text-center text-red-500 bg-earth-50 min-h-screen font-medium">Access Denied. Admin privileges required.</div>;
   }
 
@@ -95,7 +86,6 @@ export default function AdminPage() {
                   key={consult.id}
                   onClick={() => {
                     setSelectedConsult(consult);
-                    setRemedyContent(consult.remedy || '');
                   }}
                   className={`w-full text-left p-4 rounded-lg transition-colors border ${
                     selectedConsult?.id === consult.id 
@@ -191,3 +181,4 @@ export default function AdminPage() {
     </div>
   );
 }
+

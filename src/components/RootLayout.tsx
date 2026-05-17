@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Leaf, Menu, X } from 'lucide-react';
 
 export default function RootLayout() {
-  const { user, userData, logout } = useAuth();
+  const { userData, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -22,16 +22,16 @@ export default function RootLayout() {
             <nav className="hidden md:flex gap-8 items-center">
               <Link to="/" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">Home</Link>
               <Link to="/#about" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">About Ayurveda</Link>
-              {user ? (
+              {userData ? (
                 <>
-                  <Link to={userData?.role === 'doctor' ? '/admin' : '/my-health'} className="text-earth-600 hover:text-sage-600 font-medium transition-colors">
+                  <Link to={userData.role === 'doctor' ? '/admin' : '/my-health'} className="text-earth-600 hover:text-sage-600 font-medium transition-colors">
                     Dashboard
                   </Link>
                   <button 
                     onClick={logout}
                     className="text-earth-600 hover:text-terra-500 font-medium transition-colors"
                   >
-                    Logout
+                    Logout ({userData.displayName})
                   </button>
                   <Link to="/consult" className="px-5 py-2.5 bg-sage-600 text-white hover:bg-sage-800 rounded-md font-medium transition-colors">
                     Consult Now
@@ -39,7 +39,7 @@ export default function RootLayout() {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">Login / My Account</Link>
+                  <Link to="/login" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">My Profile</Link>
                   <Link to="/consult" className="px-5 py-2.5 bg-sage-600 text-white hover:bg-sage-800 rounded-md font-medium transition-colors">
                     Consult Now
                   </Link>
@@ -62,20 +62,20 @@ export default function RootLayout() {
           <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-earth-200 shadow-sm py-4 px-4 flex flex-col gap-4">
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">Home</Link>
             <Link to="/#about" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">About Ayurveda</Link>
-            {user ? (
+            {userData ? (
               <>
-                <Link to={userData?.role === 'doctor' ? '/admin' : '/my-health'} onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">
+                <Link to={userData.role === 'doctor' ? '/admin' : '/my-health'} onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">
                   Dashboard
                 </Link>
                 <button 
                   onClick={() => { logout(); setMobileMenuOpen(false); }}
                   className="text-left text-earth-800 font-medium py-2"
                 >
-                  Logout
+                  Logout ({userData.displayName})
                 </button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">Login / My Account</Link>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">My Profile</Link>
             )}
             <Link to="/consult" onClick={() => setMobileMenuOpen(false)} className="mt-2 text-center w-full px-5 py-3 bg-sage-600 text-white rounded-md font-medium">
               Consult Now
@@ -97,7 +97,7 @@ export default function RootLayout() {
                 <span className="font-serif text-xl font-bold text-earth-50 tracking-tight">Vaydyan</span>
               </div>
               <p className="text-earth-300 text-sm max-w-sm mb-6">
-                Ancient healing for modern life. Holistic Ayurveda treatments and remedies crafted by George.
+                Ancient healing for modern life. Holistic Ayurveda treatments and remedies crafted by Vaydyan AI and George.
               </p>
             </div>
             <div>

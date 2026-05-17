@@ -18,7 +18,7 @@ interface ConsultFormData {
 }
 
 export default function ConsultPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { userData, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,18 +28,18 @@ export default function ConsultPage() {
 
   if (authLoading) return <div className="p-8 text-center bg-earth-50 min-h-screen">Loading...</div>;
 
-  if (!user) {
+  if (!userData) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 bg-earth-50">
         <div className="bg-white p-8 rounded-xl shadow-sm border border-earth-100 max-w-lg text-center">
           <Leaf className="w-12 h-12 text-sage-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-serif text-earth-800 mb-4">Login Required</h2>
-          <p className="text-earth-600 mb-6">You need to create a secure profile to keep track of your health history and receive your remedy.</p>
+          <h2 className="text-2xl font-serif text-earth-800 mb-4">Name Required</h2>
+          <p className="text-earth-600 mb-6">Please enter your name to keep track of your health history and receive your remedy.</p>
           <button 
             onClick={() => navigate('/login', { state: { from: { pathname: '/consult' } } })}
             className="w-full bg-sage-600 hover:bg-sage-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
           >
-            Go to Login
+            Enter Name
           </button>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function ConsultPage() {
       const docRef = doc(db, 'consultations', consultationId);
       
       const firestorePayload = {
-        userId: user.uid,
+        patientName: userData.displayName,
         status: 'completed',
         chiefComplaint: data.chiefComplaint,
         healthContext: JSON.stringify({

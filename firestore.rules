@@ -14,73 +14,24 @@ service cloud.firestore {
     }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
-    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
     
-    // Admins check (using the admins collection or hardcoded email for bootstrap)
-    function isAdmin() { 
-      // Allow bootstrap admin
-      return isSignedIn() && (
-        request.auth.token.email == 'creativedesignergeorge@gmail.com' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      ); 
-    }
-    
-    // Users Collection
-    function isValidUser(data) {
-      let hasRequired = data.keys().hasAll(['uid', 'email', 'role', 'createdAt']) && data.keys().size() <= 5;
-      return hasRequired 
-        && data.uid is string && data.uid.size() <= 128
-        && data.email is string && data.email.size() <= 256
-        && data.role in ['patient', 'doctor']
-        && data.createdAt == request.time;
-    }
-    
-    match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      // No blanket list allowed for users
-      allow list: if false;
-      
-      allow create: if isSignedIn() 
-        && isValidId(userId)
-        && request.auth.uid == userId
-        && isValidUser(incoming())
-        && incoming().uid == request.auth.uid
-        && incoming().email == request.auth.token.email
-        && (incoming().role == 'patient' || isAdmin()); // Prevent users from making themselves docs
-        
-      allow update: if isSignedIn()
-        && request.auth.uid == userId
-        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName'])
-        && (incoming().get('displayName', '') is string && incoming().get('displayName', '').size() <= 128);
-    }
-    
-    // Admin Collection (Read-only for app, updated by backend/console)
-    match /admins/{userId} {
-      allow get: if isSignedIn() && request.auth.uid == userId;
-      allow list: if false;
-    }
-
     // Consultations Collection
     function isValidConsultation(data) {
-      let hasRequired = data.keys().hasAll(['userId', 'status', 'chiefComplaint', 'createdAt', 'updatedAt']);
+      let hasRequired = data.keys().hasAll(['patientName', 'status', 'chiefComplaint', 'createdAt', 'updatedAt']);
       return hasRequired 
-        && data.userId is string && data.userId.size() <= 128
-        && data.status in ['pending', 'reviewed', 'completed']
+        && data.patientName is string && data.patientName.size() <= 128
+        && data.status in ['pending', 'completed']
         && data.chiefComplaint is string && data.chiefComplaint.size() <= 2000
-        && data.createdAt == request.time
-        && data.updatedAt == request.time;
+        && data.createdAt is string
+        && data.updatedAt is string;
     }
     
     match /consultations/{consultationId} {
-      // Patients can only get/list their own consultations. Admins can view all if they query specifically, wait...
-      // "allow list MUST explicitly evaluate existing() or resource.data"
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Open read access so users can view their history by name
+      allow read: if true;
 
-      allow create: if isSignedIn() 
-        && isValidId(consultationId)
+      allow create: if isValidId(consultationId)
         && isValidConsultation(incoming())
-        && incoming().userId == request.auth.uid
         && incoming().status in ['pending', 'completed']
         // Optional fields sizing
         && (!('healthContext' in incoming()) || (incoming().healthContext is string && incoming().healthContext.size() <= 5000))
@@ -88,17 +39,13 @@ service cloud.firestore {
         && (!('remedy' in incoming()) || (incoming().remedy is string && incoming().remedy.size() <= 20000));
 
       allow update: if (
-        isSignedIn() && (
-          // Admin can resolve/consult 
-          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'remedy', 'updatedAt'])
-            && incoming().status in ['reviewed', 'completed']
-            && incoming().remedy is string && incoming().remedy.size() <= 10000
-            && incoming().updatedAt == request.time)
-        )
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'remedy', 'updatedAt'])
+        && incoming().status in ['pending', 'completed']
+        && incoming().remedy is string && incoming().remedy.size() <= 20000
+        && incoming().updatedAt is string
       );
       
-      // Consultations shouldn't be deleted by patients
-      allow delete: if isAdmin();
+      allow delete: if true; // Admin can delete
     }
   }
 }

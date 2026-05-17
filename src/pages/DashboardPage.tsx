@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Leaf, Clock, CheckCircle, FileText, Download } from 'lucide-react';
+import { Leaf, Clock, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ interface Consultation {
 }
 
 export default function DashboardPage() {
-  const { user, userData } = useAuth();
+  const { userData } = useAuth();
   const location = useLocation();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +30,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchConsultations = async () => {
-      if (!user) return;
+      if (!userData?.displayName) {
+         setLoading(false);
+         return;
+      }
       try {
         const q = query(
           collection(db, 'consultations'),
-          where('userId', '==', user.uid),
-          // orderBy('createdAt', 'desc') // Requires an index if combined with where, so we sort in memory for now
+          where('patientName', '==', userData.displayName)
         );
         const snapshot = await getDocs(q);
         const results = snapshot.docs.map(doc => ({
@@ -52,9 +54,9 @@ export default function DashboardPage() {
       }
     };
     fetchConsultations();
-  }, [user]);
+  }, [userData]);
 
-  if (!user || !userData) {
+  if (!userData?.displayName) {
     return <div className="p-8 text-center bg-earth-50 min-h-screen">Loading or unauthorized...</div>;
   }
 
