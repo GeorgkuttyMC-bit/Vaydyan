@@ -1,9 +1,18 @@
-import app from './api/index.js';
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
+import generateRemedyHandler from './api/generate-remedy.js';
 
 async function startServer() {
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+
+  app.all('/api/generate-remedy', (req, res) => {
+    generateRemedyHandler(req, res);
+  });
+
   const PORT = process.env.PORT || 3000;
 
   if (process.env.NODE_ENV !== 'production') {

@@ -66,7 +66,14 @@ export default function ConsultPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to generate a remedy from our AI system. Please try again.');
+        let errorMsg = 'Failed to generate a remedy from our AI system. Please try again.';
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch (e) {
+          // ignore parsing error
+        }
+        throw new Error(errorMsg);
       }
       
       const { remedy } = await res.json();
@@ -101,8 +108,11 @@ export default function ConsultPage() {
       navigate('/my-health', { state: { consultationSubmitted: true } });
     } catch (error) {
       console.error(error);
-      alert('An error occurred while communicating with the Vaydyan system.');
-      handleFirestoreError(error, OperationType.CREATE, 'consultations');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while communicating with the Vaydyan system.';
+      alert(errorMessage);
+      if (errorMessage.includes('Missing or insufficient permissions') || errorMessage.includes('Firestore')) {
+        handleFirestoreError(error, OperationType.CREATE, 'consultations');
+      }
     } finally {
       setIsSubmitting(false);
       setStatusText('');
