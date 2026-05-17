@@ -13,9 +13,13 @@ export default function RootLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-              <Leaf className="h-6 w-6 text-sage-600" />
-              <span className="font-serif text-2xl font-bold text-earth-800 tracking-tight">Vaydyan</span>
-              <span className="text-earth-500 italic text-sm mt-1 ml-1 hidden sm:inline-block">by George</span>
+              <div className="bg-sage-600 p-1.5 rounded-lg shadow-sm">
+                 <Leaf className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-serif text-2xl font-bold text-earth-800 tracking-tight">Vaydyan</span>
+                <span className="font-serif text-lg italic text-sage-600 font-medium">by George</span>
+              </div>
             </Link>
             
             {/* Desktop Nav */}
@@ -93,8 +97,13 @@ export default function RootLayout() {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <Leaf className="h-6 w-6 text-sage-500" />
-                <span className="font-serif text-xl font-bold text-earth-50 tracking-tight">Vaydyan</span>
+                <div className="bg-sage-600 p-1.5 rounded-lg shadow-sm">
+                   <Leaf className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-serif text-2xl font-bold text-earth-50 tracking-tight">Vaydyan</span>
+                  <span className="font-serif text-lg italic text-sage-400 font-medium">by George</span>
+                </div>
               </div>
               <p className="text-earth-300 text-sm max-w-sm mb-6">
                 Ancient healing for modern life. Holistic Ayurveda treatments and remedies crafted by Vaydyan AI and George.

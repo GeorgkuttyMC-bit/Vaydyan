@@ -42,6 +42,8 @@ export default async function handler(req: any, res: any) {
     Analyze the following patient data and respond with a structured Ayurvedic remedy protocol.
     Use Markdown with clear headings. Focus on Diagnosis, Dietary Guidelines, Herbal Protocol, and Lifestyle/Yoga modifications.
     
+    IMPORTANT: Please provide the entire response in two languages: first in English, followed by a clear divider (like ---), and then in Malayalam.
+    
     Patient Complaint: ${chiefComplaint}
     Health Context: ${healthContext}
     Lifestyle & Dosha Attributes: ${lifestyle}

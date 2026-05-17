@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Leaf, Clock, CheckCircle } from 'lucide-react';
+import { Leaf, Clock, CheckCircle, Volume2, Square } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 
@@ -21,12 +21,45 @@ export default function DashboardPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState(location.state?.consultationSubmitted || false);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (successMessage) {
       setTimeout(() => setSuccessMessage(false), 5000);
     }
   }, [successMessage]);
+
+  useEffect(() => {
+    // Stop speaking when unmounting
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleSpeak = (id: string, text: string) => {
+    if (!('speechSynthesis' in window)) {
+      alert("Sorry, your browser doesn't support text to speech!");
+      return;
+    }
+
+    if (speakingId === id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+    } else {
+      window.speechSynthesis.cancel();
+      
+      const cleanText = text.replace(/[*#]/g, ''); // Remove some markdown characters for better reading
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      
+      utterance.onend = () => setSpeakingId(null);
+      utterance.onerror = () => setSpeakingId(null);
+
+      window.speechSynthesis.speak(utterance);
+      setSpeakingId(id);
+    }
+  };
 
   useEffect(() => {
     const fetchConsultations = async () => {
@@ -118,9 +151,25 @@ export default function DashboardPage() {
 
                     {consult.remedy ? (
                       <div>
-                        <h3 className="text-sm font-semibold text-sage-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <Leaf className="w-4 h-4" /> Vaydyan AI Protocol
-                        </h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-sage-700 uppercase tracking-wider flex items-center gap-2">
+                            <Leaf className="w-4 h-4" /> Vaydyan AI Protocol
+                          </h3>
+                          <button
+                            onClick={() => handleSpeak(consult.id, consult.remedy || '')}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                              speakingId === consult.id 
+                                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
+                                : 'bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200'
+                            }`}
+                          >
+                            {speakingId === consult.id ? (
+                              <><Square className="w-4 h-4 fill-current" /> Stop Reading</>
+                            ) : (
+                              <><Volume2 className="w-4 h-4" /> Read Aloud</>
+                            )}
+                          </button>
+                        </div>
                         <div className="whitespace-pre-wrap text-earth-800 bg-sage-50/30 p-6 rounded-md border border-sage-100 font-sans text-sm md:text-base leading-relaxed">
                           {consult.remedy.replace(/\*\*/g, '')}
                         </div>

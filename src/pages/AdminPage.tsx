@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Leaf, UserCircle, FileSignature } from 'lucide-react';
+import { Leaf, UserCircle, FileSignature, Volume2, Square } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Consultation {
@@ -22,6 +22,39 @@ export default function AdminPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Stop speaking when unmounting
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleSpeak = (id: string, text: string) => {
+    if (!('speechSynthesis' in window)) {
+      alert("Sorry, your browser doesn't support text to speech!");
+      return;
+    }
+
+    if (speakingId === id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+    } else {
+      window.speechSynthesis.cancel();
+      
+      const cleanText = text.replace(/[*#]/g, ''); // Remove some markdown characters for better reading
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      
+      utterance.onend = () => setSpeakingId(null);
+      utterance.onerror = () => setSpeakingId(null);
+
+      window.speechSynthesis.speak(utterance);
+      setSpeakingId(id);
+    }
+  };
 
   useEffect(() => {
     const fetchConsultations = async () => {
@@ -65,12 +98,38 @@ export default function AdminPage() {
     }
   };
 
+  const uniqueUsersCount = new Set(consultations.map(c => (c.patientName || '').trim().toLowerCase())).size;
+  const totalConsultations = consultations.length;
+
   return (
-    <div className="flex-1 bg-earth-50 py-8 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 h-[calc(100vh-140px)]">
+    <div className="flex-1 bg-earth-50 py-8 px-4 sm:px-6 flex flex-col">
+      <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 h-[calc(100vh-100px)]">
         
-        {/* Left Column - List */}
-        <div className="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-earth-200 overflow-hidden flex flex-col h-full">
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+          <div className="bg-white p-6 rounded-xl border border-earth-200 shadow-sm flex items-center justify-between">
+             <div>
+               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">Total Patients</h3>
+               <p className="text-3xl font-serif font-bold text-sage-700">{uniqueUsersCount}</p>
+             </div>
+             <div className="w-12 h-12 bg-sage-50 rounded-full flex items-center justify-center">
+               <UserCircle className="w-6 h-6 text-sage-600" />
+             </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl border border-earth-200 shadow-sm flex items-center justify-between">
+             <div>
+               <h3 className="text-sm font-medium text-earth-500 uppercase tracking-wider mb-1">Consultations</h3>
+               <p className="text-3xl font-serif font-bold text-sage-700">{totalConsultations}</p>
+             </div>
+             <div className="w-12 h-12 bg-sage-50 rounded-full flex items-center justify-center">
+               <FileSignature className="w-6 h-6 text-sage-600" />
+             </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-6 flex-1 min-h-0">
+          {/* Left Column - List */}
+          <div className="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-earth-200 overflow-hidden flex flex-col h-full">
           <div className="p-4 border-b border-earth-100 bg-earth-100/50">
             <h2 className="font-serif font-bold text-lg text-earth-800">System Logs / Vaydyan Queue</h2>
           </div>
@@ -164,9 +223,27 @@ export default function AdminPage() {
 
                 {/* AI Remedy output */}
                 <section className="flex flex-col">
-                  <h3 className="text-xs font-bold text-sage-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <Leaf className="w-4 h-4" /> Vaydyan System Generation Log
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-bold text-sage-600 uppercase tracking-wider flex items-center gap-2">
+                      <Leaf className="w-4 h-4" /> Vaydyan System Generation Log
+                    </h3>
+                    {selectedConsult.remedy && (
+                      <button
+                        onClick={() => handleSpeak(selectedConsult.id, selectedConsult.remedy || '')}
+                        className={`flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                          speakingId === selectedConsult.id 
+                            ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
+                            : 'bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200'
+                        }`}
+                      >
+                        {speakingId === selectedConsult.id ? (
+                          <><Square className="w-3 h-3 fill-current" /> Stop</>
+                        ) : (
+                          <><Volume2 className="w-3 h-3" /> Read Aloud</>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <div className="whitespace-pre-wrap text-earth-800 bg-sage-50/30 p-6 rounded-md border border-sage-100 font-sans text-sm leading-relaxed">
                     {(selectedConsult.remedy || 'No remedy generated.').replace(/\*\*/g, '')}
                   </div>
@@ -177,6 +254,7 @@ export default function AdminPage() {
           )}
         </div>
         
+        </div>
       </div>
     </div>
   );
