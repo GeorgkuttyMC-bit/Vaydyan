@@ -20,6 +20,7 @@ interface Consultation {
 export default function AdminPage() {
   const { userData } = useAuth();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
@@ -75,7 +76,7 @@ export default function AdminPage() {
          
          if (currentChunk < chunks.length && chunks[currentChunk].trim().length > 0) {
             const utterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : 'en-US'; 
+            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : (text.includes('Haftungsausschluss') ? 'de-DE' : 'en-US'); 
             
             utterance.onend = () => {
                if (abortController.signal.aborted) return;
@@ -179,8 +180,15 @@ export default function AdminPage() {
         <div className="flex flex-col md:flex-row gap-6 flex-1 min-h-0">
           {/* Left Column - List */}
           <div className="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-earth-200 overflow-hidden flex flex-col h-full">
-          <div className="p-4 border-b border-earth-100 bg-earth-100/50">
+          <div className="p-4 border-b border-earth-100 bg-earth-100/50 flex flex-col gap-3 shrink-0">
             <h2 className="font-serif font-bold text-lg text-earth-800">System Logs / Vaydyan Queue</h2>
+            <input 
+              type="text" 
+              placeholder="Search patients or complaints..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-earth-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-sage-500"
+            />
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
@@ -189,7 +197,12 @@ export default function AdminPage() {
             ) : consultations.length === 0 ? (
               <p className="p-4 text-center text-earth-500 text-sm">No consultations found.</p>
             ) : (
-              consultations.map(consult => (
+              consultations
+              .filter(c => 
+                c.patientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                c.chiefComplaint.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map(consult => (
                 <button
                   key={consult.id}
                   onClick={() => {
@@ -229,13 +242,32 @@ export default function AdminPage() {
               
               {/* Header Info */}
               <div className="p-6 border-b border-earth-100 shrink-0">
-                <div className="flex items-center gap-3 mb-4">
-                  <UserCircle className="w-10 h-10 text-sage-600" />
-                  <div>
-                    <h2 className="text-xl font-serif text-earth-800">{selectedConsult.patientName}</h2>
-                    <p className="text-sm text-earth-500">Submitted: {format(new Date(selectedConsult.createdAt), 'PPP p')}</p>
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-3">
+                      <UserCircle className="w-10 h-10 text-sage-600" />
+                      <div>
+                        <h2 className="text-xl font-serif text-earth-800">{selectedConsult.patientName}</h2>
+                        <p className="text-sm text-earth-500">Submitted: {format(new Date(selectedConsult.createdAt), 'PPP p')}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to delete this consultation record? This cannot be undone.')) {
+                          try {
+                            const { deleteDoc, doc } = await import('firebase/firestore');
+                            await deleteDoc(doc(db, 'consultations', selectedConsult.id));
+                            setConsultations(prev => prev.filter(c => c.id !== selectedConsult.id));
+                            setSelectedConsult(null);
+                          } catch (error) {
+                            handleFirestoreError(error, OperationType.DELETE, 'consultations');
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-md font-medium text-sm transition-colors"
+                    >
+                      Delete Record
+                    </button>
                   </div>
-                </div>
               </div>
 
               {/* Scrollable content area */}

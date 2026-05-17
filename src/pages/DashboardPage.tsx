@@ -80,7 +80,7 @@ export default function DashboardPage() {
          
          if (currentChunk < chunks.length && chunks[currentChunk].trim().length > 0) {
             const utterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : 'en-US'; 
+            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : (text.includes('Haftungsausschluss') ? 'de-DE' : 'en-US'); 
             
             utterance.onend = () => {
                if (abortController.signal.aborted) return;

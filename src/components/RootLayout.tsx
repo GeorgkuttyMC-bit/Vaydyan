@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Leaf, Menu, X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Leaf, Menu, X, Globe } from 'lucide-react';
 
 export default function RootLayout() {
   const { userData, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isDe = language === 'de';
+
+  const texts = {
+    home: isDe ? 'Startseite' : 'Home',
+    about: isDe ? 'Über Ayurveda' : 'About Ayurveda',
+    dashboard: isDe ? 'Verwaltungs-Dashboard' : 'Dashboard',
+    adminDashboard: isDe ? 'Admin Dashboard' : 'Admin Dashboard',
+    logout: isDe ? 'Abmelden' : 'Logout',
+    profile: isDe ? 'Mein Profil' : 'My Profile',
+    consult: isDe ? 'Jetzt konsultieren' : 'Consult Now',
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-earth-50">
@@ -23,29 +37,37 @@ export default function RootLayout() {
             </Link>
             
             {/* Desktop Nav */}
-            <nav className="hidden md:flex gap-8 items-center">
-              <Link to="/" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">Home</Link>
-              <Link to="/#about" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">About Ayurveda</Link>
+            <nav className="hidden md:flex gap-6 items-center">
+              <button 
+                onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
+                className="flex items-center gap-1.5 text-earth-600 hover:text-sage-600 font-medium transition-colors"
+              >
+                <Globe className="w-4 h-4" />
+                {language === 'en' ? 'EN / DE' : 'DE / EN'}
+              </button>
+              
+              <Link to="/" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">{texts.home}</Link>
+              <Link to="/#about" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">{texts.about}</Link>
               {userData ? (
                 <>
                   <Link to={userData.role === 'doctor' ? '/admin' : '/my-health'} className="text-earth-600 hover:text-sage-600 font-medium transition-colors">
-                    Dashboard
+                    {userData.role === 'doctor' ? texts.adminDashboard : texts.dashboard}
                   </Link>
                   <button 
                     onClick={logout}
                     className="text-earth-600 hover:text-terra-500 font-medium transition-colors"
                   >
-                    Logout ({userData.displayName})
+                    {texts.logout} ({userData.displayName})
                   </button>
                   <Link to="/consult" className="px-5 py-2.5 bg-sage-600 text-white hover:bg-sage-800 rounded-md font-medium transition-colors">
-                    Consult Now
+                    {texts.consult}
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">My Profile</Link>
+                  <Link to="/login" className="text-earth-600 hover:text-sage-600 font-medium transition-colors">{texts.profile}</Link>
                   <Link to="/consult" className="px-5 py-2.5 bg-sage-600 text-white hover:bg-sage-800 rounded-md font-medium transition-colors">
-                    Consult Now
+                    {texts.consult}
                   </Link>
                 </>
               )}
@@ -64,25 +86,32 @@ export default function RootLayout() {
         {/* Mobile Nav */}
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-earth-200 shadow-sm py-4 px-4 flex flex-col gap-4">
-            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">Home</Link>
-            <Link to="/#about" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">About Ayurveda</Link>
+            <button 
+              onClick={() => { setLanguage(language === 'en' ? 'de' : 'en'); setMobileMenuOpen(false); }}
+              className="flex items-center gap-1.5 text-earth-800 font-medium py-2"
+            >
+              <Globe className="w-4 h-4" />
+              {language === 'en' ? 'Switch to German' : 'Switch to English'}
+            </button>
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">{texts.home}</Link>
+            <Link to="/#about" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">{texts.about}</Link>
             {userData ? (
               <>
                 <Link to={userData.role === 'doctor' ? '/admin' : '/my-health'} onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">
-                  Dashboard
+                  {userData.role === 'doctor' ? texts.adminDashboard : texts.dashboard}
                 </Link>
                 <button 
                   onClick={() => { logout(); setMobileMenuOpen(false); }}
                   className="text-left text-earth-800 font-medium py-2"
                 >
-                  Logout ({userData.displayName})
+                  {texts.logout} ({userData.displayName})
                 </button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">My Profile</Link>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-earth-800 font-medium py-2">{texts.profile}</Link>
             )}
             <Link to="/consult" onClick={() => setMobileMenuOpen(false)} className="mt-2 text-center w-full px-5 py-3 bg-sage-600 text-white rounded-md font-medium">
-              Consult Now
+              {texts.consult}
             </Link>
           </div>
         )}

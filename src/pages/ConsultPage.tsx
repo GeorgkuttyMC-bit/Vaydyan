@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Leaf, AlertCircle } from 'lucide-react';
@@ -19,6 +20,7 @@ interface ConsultFormData {
 
 export default function ConsultPage() {
   const { userData, loading: authLoading } = useAuth();
+  const { language, targetLanguage } = useLanguage();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,7 +57,8 @@ export default function ConsultPage() {
       const payloadContext = {
         chiefComplaint: data.chiefComplaint,
         healthContext: `Age: ${data.age}, Gender/Body type: ${data.gender}, Allergies: ${data.allergies}, Meds: ${data.medications}`,
-        lifestyle: `Sleep: ${data.sleepPatterns}, Digestion: ${data.digestion}, Stress: ${data.stressLevels}`
+        lifestyle: `Sleep: ${data.sleepPatterns}, Digestion: ${data.digestion}, Stress: ${data.stressLevels}`,
+        targetLanguage
       };
 
       // 1. Generate Remedy using our backend API
