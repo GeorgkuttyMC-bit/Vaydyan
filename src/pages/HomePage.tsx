@@ -14,6 +14,7 @@ export default function HomePage() {
   const { language } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSpeakingCharaka, setIsSpeakingCharaka] = useState(false);
+  const [bookLanguage, setBookLanguage] = useState<'en'|'ml'>('en');
   const abortControllerRef = useRef<AbortController | null>(null);
   
   useEffect(() => {
@@ -252,9 +253,34 @@ export default function HomePage() {
             <p>{texts.charakaDesc1}</p>
             <p>{texts.charakaDesc2}</p>
           </div>
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              onClick={() => setBookLanguage('en')}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                bookLanguage === 'en'
+                  ? 'bg-earth-800 text-white'
+                  : 'bg-earth-200 text-earth-800 hover:bg-earth-300'
+              }`}
+            >
+              Read in English
+            </button>
+            <button
+              onClick={() => setBookLanguage('ml')}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                bookLanguage === 'ml'
+                  ? 'bg-earth-800 text-white'
+                  : 'bg-earth-200 text-earth-800 hover:bg-earth-300'
+              }`}
+            >
+              Read in Malayalam
+            </button>
+          </div>
           <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200">
             <iframe 
-              src="https://archive.org/embed/charaka-samhita-text-with-english-tanslation-p.-v.-sharma?ui=embed" 
+              src={bookLanguage === 'en' 
+                ? "https://archive.org/embed/charaka-samhita-text-with-english-tanslation-p.-v.-sharma?ui=embed" 
+                : "https://archive.org/embed/CharakaSamhithaNidanasthanam?ui=embed"
+              }
               width="100%" 
               height="600" 
               frameBorder="0" 
