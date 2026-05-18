@@ -88,17 +88,7 @@ export default function AdminPage() {
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
       
-      let textToSpeak = text;
-      // Extract Malayalam part if exists using regex
-      const malayalamIndex = text.search(/[\u0D00-\u0D7F]/);
-      if (malayalamIndex !== -1) {
-         const previousNewline = text.lastIndexOf('\n', malayalamIndex);
-         textToSpeak = text.substring(previousNewline === -1 ? 0 : previousNewline).trim();
-      } else if (text.includes('---')) {
-         textToSpeak = text.split('---').pop()?.trim() || text;
-      }
-
-      const cleanText = textToSpeak.replace(/[*#]/g, '').trim();
+      const cleanText = text.replace(/[*#]/g, '').trim();
       
       // Fallback chunking: Split by punctuation to prevent long text from cutting off on mobile Chrome/Safari
       const chunks = cleanText.match(/[^.!?\n]+[.!?\n]*/g) || [cleanText];
@@ -106,12 +96,33 @@ export default function AdminPage() {
       setSpeakingId(id);
 
       let currentChunk = 0;
+      let inSecondSection = false;
+
       const playNext = () => {
          if (abortController.signal.aborted) return;
          
          if (currentChunk < chunks.length && chunks[currentChunk].trim().length > 0) {
-            const utterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-            utterance.lang = malayalamIndex !== -1 ? 'ml-IN' : (text.includes('Haftungsausschluss') ? 'de-DE' : 'en-US'); 
+            const chunkText = chunks[currentChunk];
+            
+            if (chunkText.includes('---') || /[\u0D00-\u0D7F]/.test(chunkText)) {
+               inSecondSection = true;
+            }
+
+            // Remove formatting dashes so engine doesn't read "dash dash dash"
+            const textToFormat = chunkText.replace(/-{3,}/g, '').trim();
+            if (!textToFormat) {
+               currentChunk++;
+               setTimeout(playNext, 10);
+               return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(textToFormat);
+            
+            if (inSecondSection) {
+               utterance.lang = language === 'de' ? 'de-DE' : 'ml-IN';
+            } else {
+               utterance.lang = 'en-US';
+            }
             
             utterance.onend = () => {
                if (abortController.signal.aborted) return;
@@ -127,7 +138,7 @@ export default function AdminPage() {
                   setSpeakingId(null);
                } else {
                   currentChunk++;
-                  playNext();
+                  setTimeout(playNext, 10);
                }
             };
             

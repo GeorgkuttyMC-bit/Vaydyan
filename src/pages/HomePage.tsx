@@ -45,7 +45,10 @@ export default function HomePage() {
     aboutQuote: isDe ? '"Indem wir die ganzheitliche Weisheit des Ayurveda durch intelligente Software demokratisieren, befähigen wir den Einzelnen, sein Wohlbefinden auf natürliche Weise selbst in die Hand zu nehmen."' : '"By democratizing the holistic wisdom of Ayurveda through intelligent software, we empower individuals to take control of their wellness naturally."',
     historyTitle: isDe ? 'Geschichte der indischen Ayurveda-Kultur' : 'History of Indian Ayurvedic Culture',
     historyDesc1: isDe ? 'Ayurveda, oft als "Mutter aller Heilkunst" bezeichnet, ist ein über 5.000 Jahre altes System der natürlichen Heilung, das seinen Ursprung in der vedischen Kultur Indiens hat.' : 'Ayurveda, often called the "Mother of All Healing," is an over 5,000-year-old system of natural healing that has its origins in the Vedic culture of India.',
-    historyDesc2: isDe ? 'Es betont das Gleichgewicht von Geist, Körper und Seele, um die allgemeine Gesundheit zu erhalten und Krankheiten vorzubeugen, indem es eine Fülle von Kräutern, Reinigungstechniken, Meditation und Ernährungsrichtlinien verwendet, die im Laufe der Jahrtausende entwickelt und verfeinert wurden.' : 'It emphasizes the balance of mind, body, and spirit to maintain overall health and prevent illness, utilizing a wealth of herbs, purification techniques, meditation, and dietary guidelines developed and refined over millennia.'
+    historyDesc2: isDe ? 'Es betont das Gleichgewicht von Geist, Körper und Seele, um die allgemeine Gesundheit zu erhalten und Krankheiten vorzubeugen, indem es eine Fülle von Kräutern, Reinigungstechniken, Meditation und Ernährungsrichtlinien verwendet, die im Laufe der Jahrtausende entwickelt und verfeinert wurden.' : 'It emphasizes the balance of mind, body, and spirit to maintain overall health and prevent illness, utilizing a wealth of herbs, purification techniques, meditation, and dietary guidelines developed and refined over millennia.',
+    charakaTitle: isDe ? 'Charaka Samhita: Der grundlegende Text' : 'Charaka Samhita: The Foundational Text',
+    charakaDesc1: isDe ? 'Die Charaka Samhita ist einer der ältesten und wichtigsten erhaltenen alten Texte zum Thema Ayurveda, der schätzungsweise zwischen dem zweiten Jahrhundert v. Chr. und dem zweiten Jahrhundert n. Chr. verfasst wurde.' : 'The Charaka Samhita is one of the oldest and most important surviving ancient texts on Ayurveda, estimated to have been written between the 2nd century BCE and the 2nd century CE.',
+    charakaDesc2: isDe ? 'Sie ist tiefgreifend nützlich wegen ihrer detaillierten Erforschung von Krankheitsursachen, Diagnostik und ganzheitlichen Behandlungsansätzen. Das Buch führt Konzepte wie Verdauung (Agni), Immunität und die Bedeutung von Lebensstil und Ernährung ein und bildet die Kernprinzipien des modernen Ayurveda-Studiums.' : 'It is profoundly useful for its detailed exploration of disease causes, diagnostics, and holistic treatment approaches. The book introduces concepts like digestion (Agni), immunity, and the importance of lifestyle and diet, forming the core principles of modern Ayurvedic study.'
   };
 
   return (
@@ -169,6 +172,32 @@ export default function HomePage() {
               <p>{texts.historyDesc1}</p>
               <p>{texts.historyDesc2}</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Charaka Samhita Section */}
+      <section className="py-24 bg-sage-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-serif text-earth-800 mb-6">{texts.charakaTitle}</h2>
+            <div className="w-16 h-1 bg-sage-400 mx-auto mb-10"></div>
+          </div>
+          <div className="space-y-6 text-earth-600 text-lg leading-relaxed text-center mb-12">
+            <p>{texts.charakaDesc1}</p>
+            <p>{texts.charakaDesc2}</p>
+          </div>
+          <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200">
+            <iframe 
+              src="https://archive.org/embed/charaka-samhita-text-with-english-tanslation-p.-v.-sharma?ui=embed" 
+              width="100%" 
+              height="600" 
+              frameBorder="0" 
+              webkitallowfullscreen="true" 
+              mozallowfullscreen="true" 
+              allowFullScreen
+              title="Charaka Samhita Book"
+            ></iframe>
           </div>
         </div>
       </section>
