@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, HeartPulse, ShieldCheck, User } from 'lucide-react';
+import { ArrowRight, Leaf, HeartPulse, ShieldCheck, User, Volume2, Square } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const ayurvedicImages = [
@@ -13,6 +13,8 @@ const ayurvedicImages = [
 export default function HomePage() {
   const { language } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isSpeakingCharaka, setIsSpeakingCharaka] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
   useEffect(() => {
     const timer = setInterval(() => {
@@ -20,6 +22,55 @@ export default function HomePage() {
     }, 10000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const handleSpeakCharaka = (text: string) => {
+    if (isSpeakingCharaka) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      setIsSpeakingCharaka(false);
+      return;
+    }
+
+    if (!('speechSynthesis' in window)) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    // Explicitly set to Malayalam 
+    utterance.lang = 'ml-IN';
+    
+    utterance.onend = () => {
+      if (abortController.signal.aborted) return;
+      setIsSpeakingCharaka(false);
+    };
+    
+    utterance.onerror = () => {
+      if (abortController.signal.aborted) return;
+      setIsSpeakingCharaka(false);
+    };
+
+    setIsSpeakingCharaka(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const isDe = language === 'de';
 
@@ -46,9 +97,10 @@ export default function HomePage() {
     historyTitle: isDe ? 'Geschichte der indischen Ayurveda-Kultur' : 'History of Indian Ayurvedic Culture',
     historyDesc1: isDe ? 'Ayurveda, oft als "Mutter aller Heilkunst" bezeichnet, ist ein über 5.000 Jahre altes System der natürlichen Heilung, das seinen Ursprung in der vedischen Kultur Indiens hat.' : 'Ayurveda, often called the "Mother of All Healing," is an over 5,000-year-old system of natural healing that has its origins in the Vedic culture of India.',
     historyDesc2: isDe ? 'Es betont das Gleichgewicht von Geist, Körper und Seele, um die allgemeine Gesundheit zu erhalten und Krankheiten vorzubeugen, indem es eine Fülle von Kräutern, Reinigungstechniken, Meditation und Ernährungsrichtlinien verwendet, die im Laufe der Jahrtausende entwickelt und verfeinert wurden.' : 'It emphasizes the balance of mind, body, and spirit to maintain overall health and prevent illness, utilizing a wealth of herbs, purification techniques, meditation, and dietary guidelines developed and refined over millennia.',
-    charakaTitle: isDe ? 'Charaka Samhita: Der grundlegende Text' : 'Charaka Samhita: The Foundational Text',
-    charakaDesc1: isDe ? 'Die Charaka Samhita ist einer der ältesten und wichtigsten erhaltenen alten Texte zum Thema Ayurveda, der schätzungsweise zwischen dem zweiten Jahrhundert v. Chr. und dem zweiten Jahrhundert n. Chr. verfasst wurde.' : 'The Charaka Samhita is one of the oldest and most important surviving ancient texts on Ayurveda, estimated to have been written between the 2nd century BCE and the 2nd century CE.',
-    charakaDesc2: isDe ? 'Sie ist tiefgreifend nützlich wegen ihrer detaillierten Erforschung von Krankheitsursachen, Diagnostik und ganzheitlichen Behandlungsansätzen. Das Buch führt Konzepte wie Verdauung (Agni), Immunität und die Bedeutung von Lebensstil und Ernährung ein und bildet die Kernprinzipien des modernen Ayurveda-Studiums.' : 'It is profoundly useful for its detailed exploration of disease causes, diagnostics, and holistic treatment approaches. The book introduces concepts like digestion (Agni), immunity, and the importance of lifestyle and diet, forming the core principles of modern Ayurvedic study.'
+    charakaTitle: isDe ? 'Charaka Samhita: Der grundlegende Text (ചരക സംഹിത)' : 'Charaka Samhita: The Foundational Text (ചരക സംഹിത)',
+    charakaDesc1: isDe ? 'Die Charaka Samhita ist einer der ältesten und wichtigsten erhaltenen alten Texte zum Thema Ayurveda, der schätzungsweise zwischen dem zweiten Jahrhundert v. Chr. und dem zweiten Jahrhundert n. Chr. verfasst wurde.' : 'ആയുർവേദത്തെക്കുറിച്ചുള്ള ഏറ്റവും പഴക്കമുള്ളതും പ്രധാനപ്പെട്ടതുമായ പുരാതന ഗ്രന്ഥങ്ങളിലൊന്നാണ് ചരക സംഹിത. ബിസി രണ്ടാം നൂറ്റാണ്ടിനും എഡി രണ്ടാം നൂറ്റാണ്ടിനും ഇടയിലാണ് ഇത് എഴുതപ്പെട്ടതെന്ന് കണക്കാക്കപ്പെടുന്നു. (The Charaka Samhita is one of the oldest and most important surviving ancient texts on Ayurveda, estimated to have been written between the 2nd century BCE and the 2nd century CE.)',
+    charakaDesc2: isDe ? 'Sie ist tiefgreifend nützlich wegen ihrer detaillierten Erforschung von Krankheitsursachen, Diagnostik und ganzheitlichen Behandlungsansätzen. Das Buch führt Konzepte wie Verdauung (Agni), Immunität und die Bedeutung von Lebensstil und Ernährung ein und bildet die Kernprinzipien des modernen Ayurveda-Studiums.' : 'രോഗകാരണങ്ങൾ, രോഗനിർണ്ണയം, സമഗ്രമായ ചികിത്സാ രീതികൾ എന്നിവയെക്കുറിച്ചുള്ള വിശദമായ പര്യവേക്ഷണത്തിന് ഇത് അത്യന്തം ഉപയോഗപ്രദമാണ്. ദഹനം (അഗ്നി), പ്രതിരോധശേഷി, ജീവിതശൈലിയുടെയും ഭക്ഷണക്രമത്തിന്റെയും പ്രാധാന്യം തുടങ്ങിയ ആശയങ്ങൾ ഈ പുസ്തകം അവതരിപ്പിക്കുന്നു, ഇത് ആധുനിക ആയുർവേദ പഠനത്തിന്റെ പ്രധാന തത്വങ്ങൾ രൂപപ്പെടുത്തുന്നു. (It is profoundly useful for its detailed exploration of disease causes, diagnostics, and holistic treatment approaches. The book introduces concepts like digestion (Agni), immunity, and the importance of lifestyle and diet, forming the core principles of modern Ayurvedic study.)',
+    charakaSpeakText: 'ആയുർവേദത്തെക്കുറിച്ചുള്ള ഏറ്റവും പഴക്കമുള്ളതും പ്രധാനപ്പെട്ടതുമായ പുരാതന ഗ്രന്ഥങ്ങളിലൊന്നാണ് ചരക സംഹിത. ബിസി രണ്ടാം നൂറ്റാണ്ടിനും എഡി രണ്ടാം നൂറ്റാണ്ടിനും ഇടയിലാണ് ഇത് എഴുതപ്പെട്ടതെന്ന് കണക്കാക്കപ്പെടുന്നു. രോഗകാരണങ്ങൾ, രോഗനിർണ്ണയം, സമഗ്രമായ ചികിത്സാ രീതികൾ എന്നിവയെക്കുറിച്ചുള്ള വിശദമായ പര്യവേക്ഷണത്തിന് ഇത് അത്യന്തം ഉപയോഗപ്രദമാണ്. ദഹനം (അഗ്നി), പ്രതിരോധശേഷി, ജീവിതശൈലിയുടെയും ഭക്ഷണക്രമത്തിന്റെയും പ്രാധാന്യം തുടങ്ങിയ ആശയങ്ങൾ ഈ പുസ്തകം അവതരിപ്പിക്കുന്നു, ഇത് ആധുനിക ആയുർവേദ പഠനത്തിന്റെ പ്രധാന തത്വങ്ങൾ രൂപപ്പെടുത്തുന്നു.'
   };
 
   return (
@@ -179,8 +231,21 @@ export default function HomePage() {
       {/* Charaka Samhita Section */}
       <section className="py-24 bg-sage-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-serif text-earth-800 mb-6">{texts.charakaTitle}</h2>
+          <div className="text-center mb-10 relative">
+            <h2 className="text-3xl md:text-4xl font-serif text-earth-800 mb-6 flex flex-col md:flex-row items-center justify-center gap-4">
+              {texts.charakaTitle}
+              <button 
+                onClick={() => handleSpeakCharaka(texts.charakaSpeakText)}
+                className={`p-3 rounded-full flex-shrink-0 transition-all ${
+                  isSpeakingCharaka 
+                    ? 'bg-terra-100 text-terra-600 shadow-sm' 
+                    : 'bg-white text-earth-500 hover:bg-sage-100 hover:text-sage-700 shadow-sm hover:shadow-md border border-earth-100'
+                }`}
+                title={isSpeakingCharaka ? "Stop Malayalam Audio" : "Listen in Malayalam"}
+              >
+                {isSpeakingCharaka ? <Square className="w-5 h-5 fill-current" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+            </h2>
             <div className="w-16 h-1 bg-sage-400 mx-auto mb-10"></div>
           </div>
           <div className="space-y-6 text-earth-600 text-lg leading-relaxed text-center mb-12">
