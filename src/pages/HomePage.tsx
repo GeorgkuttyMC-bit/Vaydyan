@@ -15,6 +15,8 @@ export default function HomePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSpeakingCharaka, setIsSpeakingCharaka] = useState(false);
   const [bookLanguage, setBookLanguage] = useState<'en'|'ml'>('en');
+  const [isBookLoaded, setIsBookLoaded] = useState(false);
+  const [showBook, setShowBook] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   
   useEffect(() => {
@@ -229,6 +231,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Video Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-serif text-earth-800 mb-6">
+              {isDe ? 'Erleben Sie die Heilkunst des Ayurveda' : 'Experience the Healing Art of Ayurveda'}
+            </h2>
+            <div className="w-16 h-1 bg-sage-400 mx-auto mb-10"></div>
+          </div>
+          <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200 relative" style={{ paddingBottom: '56.25%', height: 0 }}>
+            <iframe 
+               className="absolute top-0 left-0 w-full h-full"
+               src="https://www.youtube.com/embed/z3dE8U7WeAY?autoplay=0&rel=0" 
+               title="Ayurveda Video"
+               frameBorder="0" 
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+               allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
       {/* Charaka Samhita Section */}
       <section className="py-24 bg-sage-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -255,9 +279,13 @@ export default function HomePage() {
           </div>
           <div className="flex justify-center gap-4 mb-6">
             <button
-              onClick={() => setBookLanguage('en')}
+              onClick={() => {
+                setBookLanguage('en');
+                setIsBookLoaded(false);
+                setShowBook(true);
+              }}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                bookLanguage === 'en'
+                bookLanguage === 'en' && showBook
                   ? 'bg-earth-800 text-white'
                   : 'bg-earth-200 text-earth-800 hover:bg-earth-300'
               }`}
@@ -265,9 +293,13 @@ export default function HomePage() {
               Read in English
             </button>
             <button
-              onClick={() => setBookLanguage('ml')}
+              onClick={() => {
+                setBookLanguage('ml');
+                setIsBookLoaded(false);
+                setShowBook(true);
+              }}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                bookLanguage === 'ml'
+                bookLanguage === 'ml' && showBook
                   ? 'bg-earth-800 text-white'
                   : 'bg-earth-200 text-earth-800 hover:bg-earth-300'
               }`}
@@ -275,21 +307,42 @@ export default function HomePage() {
               Read in Malayalam
             </button>
           </div>
-          <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200">
-            <iframe 
-              src={bookLanguage === 'en' 
-                ? "https://archive.org/embed/charaka-samhita-text-with-english-tanslation-p.-v.-sharma?ui=embed" 
-                : "https://archive.org/embed/CharakaSamhithaNidanasthanam?ui=embed"
-              }
-              width="100%" 
-              height="600" 
-              frameBorder="0" 
-              webkitallowfullscreen="true" 
-              mozallowfullscreen="true" 
-              allowFullScreen
-              title="Charaka Samhita Book"
-            ></iframe>
-          </div>
+          {showBook ? (
+            <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200 relative min-h-[600px]">
+              {!isBookLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-earth-50 z-10">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-earth-300 border-t-earth-800"></div>
+                    <p className="text-earth-600 font-medium">Loading book from Archive.org...</p>
+                    <p className="text-sm text-earth-400">This might take a moment.</p>
+                  </div>
+                </div>
+              )}
+              <iframe 
+                src={bookLanguage === 'en' 
+                  ? "https://archive.org/embed/charaka-samhita-text-with-english-tanslation-p.-v.-sharma?ui=embed" 
+                  : "https://archive.org/embed/CharakaSamhithaNidanasthanam?ui=embed"
+                }
+                width="100%" 
+                height="600" 
+                frameBorder="0" 
+                webkitallowfullscreen="true" 
+                mozallowfullscreen="true" 
+                allowFullScreen
+                title="Charaka Samhita Book"
+                onLoad={() => setIsBookLoaded(true)}
+                className="relative z-0"
+              ></iframe>
+            </div>
+          ) : (
+            <div className="w-full bg-earth-100 shadow-xl rounded-xl overflow-hidden border border-earth-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-earth-600 mb-6 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+               </div>
+               <h3 className="text-2xl font-serif text-earth-800 mb-2">Charaka Samhita Book</h3>
+               <p className="text-earth-600 mb-6 max-w-md">Select a language above to load the interactive PDF reader. Large files may take a few moments to load from the archive.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>
