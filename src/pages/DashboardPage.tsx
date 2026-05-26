@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Leaf, Clock, CheckCircle, Volume2, Square } from 'lucide-react';
+import { Leaf, Clock, CheckCircle, Volume2, Square, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 
@@ -44,6 +44,7 @@ export default function DashboardPage() {
     protocol: isDe ? 'Vaydyan KI Protokoll' : 'Vaydyan AI Protocol',
     stopReading: isDe ? 'Aufhören zu lesen' : 'Stop Reading',
     readAloud: isDe ? 'Vorlesen' : 'Read Aloud',
+    exportRemedy: isDe ? 'Exportieren' : 'Export',
     analyzingMsg: isDe ? 'Unser Vaydyan KI-System analysiert Ihr Dosha sorgfältig und erstellt Ihr personalisiertes Protokoll. Bitte aktualisieren Sie die Seite in einem Moment.' : 'Our Vaydyan AI system is carefully analyzing your dosha and crafting your personalized protocol. Please refresh in a moment.'
   };
 
@@ -144,6 +145,29 @@ export default function DashboardPage() {
     }
   };
 
+  const handleExport = (consult: Consultation) => {
+    const consultationDate = format(new Date(consult.createdAt), 'MMM dd, yyyy');
+    const content = `Vaydyan AI Consultation
+Date: ${consultationDate}
+Status: ${consult.status}
+
+Chief Complaint:
+${consult.chiefComplaint}
+
+Vaydyan AI Protocol:
+${consult.remedy?.replace(/\*\*/g, '') || 'Pending...'}
+`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Vaydyan-Remedy-${format(new Date(consult.createdAt), 'yyyy-MM-dd')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     const fetchConsultations = async () => {
       if (!userData?.displayName) {
@@ -238,20 +262,29 @@ export default function DashboardPage() {
                           <h3 className="text-sm font-semibold text-sage-700 uppercase tracking-wider flex items-center gap-2">
                             <Leaf className="w-4 h-4" /> {texts.protocol}
                           </h3>
-                          <button
-                            onClick={() => handleSpeak(consult.id, consult.remedy || '')}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                              speakingId === consult.id 
-                                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
-                                : 'bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200'
-                            }`}
-                          >
-                            {speakingId === consult.id ? (
-                              <><Square className="w-4 h-4 fill-current" /> {texts.stopReading}</>
-                            ) : (
-                              <><Volume2 className="w-4 h-4" /> {texts.readAloud}</>
-                            )}
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleExport(consult)}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-earth-50 text-earth-700 hover:bg-earth-100 border border-earth-200"
+                              title={texts.exportRemedy}
+                            >
+                              <Download className="w-4 h-4" /> {texts.exportRemedy}
+                            </button>
+                            <button
+                              onClick={() => handleSpeak(consult.id, consult.remedy || '')}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                                speakingId === consult.id 
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
+                                  : 'bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200'
+                              }`}
+                            >
+                              {speakingId === consult.id ? (
+                                <><Square className="w-4 h-4 fill-current" /> {texts.stopReading}</>
+                              ) : (
+                                <><Volume2 className="w-4 h-4" /> {texts.readAloud}</>
+                              )}
+                            </button>
+                          </div>
                         </div>
                         <div className="whitespace-pre-wrap text-earth-800 bg-sage-50/30 p-6 rounded-md border border-sage-100 font-sans text-sm md:text-base leading-relaxed">
                           {consult.remedy.replace(/\*\*/g, '')}
