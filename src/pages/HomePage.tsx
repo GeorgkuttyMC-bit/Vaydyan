@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Leaf, HeartPulse, ShieldCheck, User, Volume2, Square } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import georgeImage from '../assets/george.jpg';
 
 const ayurvedicImages = [
   "https://images.unsplash.com/photo-1512290923902-8a9f81fc7381?auto=format&fit=crop&q=80&w=1200",
@@ -184,7 +185,7 @@ export default function HomePage() {
             <div className="md:w-2/5 bg-earth-200 min-h-[300px] flex items-center justify-center relative">
                {/* Image placeholder */}
                <div className="absolute inset-0 bg-earth-300 overflow-hidden flex items-center justify-center">
-                 <img src="/george.jpg" alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover object-top" />
+                 <img src={georgeImage} alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover object-top" />
                </div>
             </div>
             <div className="md:w-3/5 p-10 md:p-14 flex flex-col justify-center">
