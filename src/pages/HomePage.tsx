@@ -184,7 +184,7 @@ export default function HomePage() {
             <div className="md:w-2/5 bg-earth-200 min-h-[300px] flex items-center justify-center relative">
                {/* Image placeholder */}
                <div className="absolute inset-0 bg-earth-300 overflow-hidden flex items-center justify-center">
-                 <img src="https://raw.githubusercontent.com/GeorgkuttyMC-bit/Vaydyan/537b32b6ba0c622c4319c05a983a39c4c629e164/public/george.jpg" alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover object-top" />
+                 <img src="/george.jpg" alt="George - Application Developer" className="absolute inset-0 w-full h-full object-cover object-top" />
                </div>
             </div>
             <div className="md:w-3/5 p-10 md:p-14 flex flex-col justify-center">
@@ -243,11 +243,13 @@ export default function HomePage() {
           <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200 relative" style={{ paddingBottom: '56.25%', height: 0 }}>
             <iframe 
                className="absolute top-0 left-0 w-full h-full"
-               src="https://www.youtube.com/embed/z3dE8U7WeAY?autoplay=0&rel=0" 
+               src="https://www.youtube-nocookie.com/embed/z3dE8U7WeAY?autoplay=0&rel=0" 
                title="Ayurveda Video"
                frameBorder="0" 
                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                allowFullScreen
+               sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+               referrerPolicy="no-referrer"
             ></iframe>
           </div>
         </div>
@@ -326,12 +328,12 @@ export default function HomePage() {
                 width="100%" 
                 height="600" 
                 frameBorder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
                 allowFullScreen
                 title="Charaka Samhita Book"
                 onLoad={() => setIsBookLoaded(true)}
                 className="relative z-0"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-downloads"
+                referrerPolicy="no-referrer"
               ></iframe>
             </div>
           ) : (
