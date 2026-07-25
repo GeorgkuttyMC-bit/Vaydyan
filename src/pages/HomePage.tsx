@@ -232,6 +232,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Instagram Section */}
+      <section className="py-24 bg-sage-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-serif text-earth-800 mb-6">
+              {isDe ? 'Folgen Sie uns auf Instagram' : 'Follow us on Instagram'}
+            </h2>
+            <div className="w-16 h-1 bg-sage-400 mx-auto mb-10"></div>
+          </div>
+          <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200 relative" style={{ paddingBottom: '56.25%', height: 0 }}>
+            <iframe 
+               className="absolute top-0 left-0 w-full h-full"
+               src="https://www.instagram.com/georgecreativestudio/embed/?autoplay=1" 
+               title="Instagram Profile"
+               frameBorder="0" 
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+               allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
       {/* Video Section */}
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -244,7 +266,7 @@ export default function HomePage() {
           <div className="w-full bg-white shadow-xl rounded-xl overflow-hidden border border-earth-200 relative" style={{ paddingBottom: '56.25%', height: 0 }}>
             <iframe 
                className="absolute top-0 left-0 w-full h-full"
-               src="https://www.youtube-nocookie.com/embed/z3dE8U7WeAY?autoplay=0&rel=0" 
+               src="https://www.youtube-nocookie.com/embed/z3dE8U7WeAY?autoplay=1&mute=1&rel=0" 
                title="Ayurveda Video"
                frameBorder="0" 
                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
